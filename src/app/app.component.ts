@@ -11,6 +11,10 @@ export class AppComponent {
   newTodo = '';
   todos: Todo[] = [];
 
+  get itemLeft() {
+    return this.todos.filter(todo => !todo.isCompleted).length;
+  }
+
   addTodo() {
     this.todos.push(new Todo(this.newTodo));
     this.newTodo = '';
