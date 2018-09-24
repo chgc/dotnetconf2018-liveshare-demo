@@ -1,4 +1,5 @@
 import { Component } from '@angular/core';
+import { Todo } from './model/todo';
 
 @Component({
   selector: 'app-root',
@@ -10,8 +11,8 @@ export class AppComponent {
   newTodo = '';
   todos = [];
 
-  addTodo(){
-    this.todos.push(this.newTodo);
+  addTodo() {
+    this.todos.push(new Todo(this.newTodo));
     this.newTodo = '';
   }
 }
