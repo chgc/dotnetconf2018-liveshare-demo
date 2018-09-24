@@ -7,4 +7,11 @@ import { Component } from '@angular/core';
 })
 export class AppComponent {
   title = 'todo';
+  newTodo = '';
+  todos = [];
+
+  addTodo(){
+    this.todos.push(this.newTodo);
+    this.newTodo = '';
+  }
 }
