@@ -31,4 +31,8 @@ export class AppComponent {
   markAllComplete() {
     this.todos = this.todos.map(todo => new Todo(todo.content, true));
   }
+
+  clearComplete() {
+    this.todos = this.todos.filter(todo => !todo.isCompleted);
+  }
 }
