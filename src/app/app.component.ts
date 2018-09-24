@@ -22,6 +22,7 @@ export class Action {
 })
 export class AppComponent {
   newTodo = '';
+  filter = '';
 
   dispatch$ = new Subject<Action>();
   todos$: Observable<Todo[]> = this.dispatch$.pipe(
@@ -58,38 +59,36 @@ export class AppComponent {
     }, []),
     shareReplay()
   );
-  filter = '';
+
   constructor(private route: ActivatedRoute) {
     route.fragment.subscribe(fragment => {
       this.filter = (fragment || '/').replace('/', '');
     });
   }
+  todoCount$ = this.todos$.pipe(map(todos => todos.length));
   itemLeft$ = this.todos$.pipe(
     map(todos => todos.filter(todo => !todo.isCompleted).length)
   );
-
-  todoCount$ = this.todos$.pipe(map(todos => todos.length));
 
   addTodo() {
     this.dispatch$.next(new Action('Add', Todo.create(this.newTodo)));
     this.newTodo = '';
   }
 
-  toggleComplete(todo: Todo) {
+  toggleComplete = (todo: Todo) =>
     this.dispatch$.next(new Action('Update', todo.toggleComplete()));
-  }
 
-  removeTodo(todo: Todo) {
-    this.dispatch$.next(new Action('Delete', todo));
-  }
+  removeTodo = (todo: Todo) => this.dispatch$.next(new Action('Delete', todo));
 
-  markAllComplete() {
-    this.dispatch$.next(new Action('MarkAllComplete'));
-  }
+  markAllComplete = () => this.dispatch$.next(new Action('MarkAllComplete'));
 
-  clearComplete() {
-    this.dispatch$.next(new Action('clearComplete'));
-  }
+  clearComplete = () => this.dispatch$.next(new Action('clearComplete'));
+
+  updateContent = (content, todo) =>
+    this.dispatch$.next(new Action('Update', todo.updateContent(content)));
+
+  cancelUpdate = (todo: Todo) =>
+    this.dispatch$.next(new Action('Update', todo.toggleEdit()));
 
   enterEdit(todo: Todo, target: HTMLInputElement) {
     if (todo.isCompleted) {
@@ -98,13 +97,5 @@ export class AppComponent {
     this.dispatch$.next(new Action('CancelAllEdit'));
     this.dispatch$.next(new Action('Update', todo.toggleEdit()));
     target.focus();
-  }
-
-  updateContent(content, todo) {
-    this.dispatch$.next(new Action('Update', todo.updateContent(content)));
-  }
-
-  cancelUpdate(todo: Todo) {
-    this.dispatch$.next(new Action('Update', todo.toggleEdit()));
   }
 }
