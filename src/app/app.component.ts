@@ -23,4 +23,8 @@ export class AppComponent {
   removeTodo(idx) {
     this.todos.splice(idx, 1);
   }
+
+  markAllComplete() {
+    this.todos = this.todos.map(todo => new Todo(todo.content, true));
+  }
 }
