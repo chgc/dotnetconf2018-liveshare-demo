@@ -19,4 +19,8 @@ export class AppComponent {
   toggleComplete(todo: Todo, idx) {
     this.todos.splice(idx, 1, todo.toggleComplete());
   }
+
+  removeTodo(idx) {
+    this.todos.splice(idx, 1);
+  }
 }
