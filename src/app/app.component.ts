@@ -9,10 +9,14 @@ import { Todo } from './model/todo';
 export class AppComponent {
   title = 'todo';
   newTodo = '';
-  todos = [];
+  todos: Todo[] = [];
 
   addTodo() {
     this.todos.push(new Todo(this.newTodo));
     this.newTodo = '';
+  }
+
+  toggleComplete(todo: Todo, idx) {
+    this.todos.splice(idx, 1, todo.toggleComplete());
   }
 }
