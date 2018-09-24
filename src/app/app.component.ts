@@ -27,11 +27,11 @@ export class AppComponent {
   }
 
   toggleComplete(todo: Todo, idx) {
-    this.todos.splice(idx, 1, todo.toggleComplete());
+    this.refreshTodoList(idx, todo.toggleComplete());
   }
 
   removeTodo(idx) {
-    this.todos.splice(idx, 1);
+    this.refreshTodoList(idx);
   }
 
   markAllComplete() {
@@ -49,15 +49,23 @@ export class AppComponent {
     this.todos = this.todos.map(
       _todo => new Todo(_todo.content, _todo.isCompleted, false)
     );
-    this.todos.splice(idx, 1, todo.toggleEdit());
+    this.refreshTodoList(idx, todo.toggleEdit());
     target.focus();
   }
 
   updateContent(content: string, idx) {
-    this.todos.splice(idx, 1, new Todo(content));
+    this.refreshTodoList(idx, new Todo(content));
   }
 
   cancelUpdate(todo: Todo, idx) {
-    this.todos.splice(idx, 1, todo.toggleEdit());
+    this.refreshTodoList(idx, todo.toggleEdit());
+  }
+
+  private refreshTodoList(idx, todo: Todo | null = null) {
+    if (!!todo) {
+      this.todos.splice(idx, 1, todo);
+    } else {
+      this.todos.splice(idx, 1);
+    }
   }
 }
