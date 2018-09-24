@@ -9,11 +9,37 @@ type ActionType =
   | 'Update'
   | 'Delete'
   | 'MarkAllComplete'
-  | 'clearComplete'
+  | 'ClearComplete'
   | 'CancelAllEdit';
 export class Action {
   constructor(public action: ActionType, public todo?: Todo) {}
 }
+
+export const TodoActions = {
+  Add: (acc, value) => {
+    const maxId =
+      (acc
+        .slice()
+        .sort((a, b) => b.id - a.id)
+        .map(todo => todo.id)[0] || 0) + 1;
+    return [...acc, new Todo(maxId, value.todo.content)];
+  },
+  Update: (acc, value) =>
+    acc.map(todo => {
+      if (todo.id === value.todo.id) {
+        todo = value.todo;
+      }
+      return todo;
+    }),
+  Delete: (acc, value) => acc.filter(todo => todo.id !== value.todo.id),
+  CancelAllEdit: (acc, value) =>
+    acc.map(
+      _todo => new Todo(_todo.id, _todo.content, _todo.isCompleted, false)
+    ),
+  ClearComplete: (acc, value) => acc.filter(todo => !todo.isCompleted),
+  MarkAllComplete: (acc, value) =>
+    acc.map(todo => new Todo(todo.id, todo.content, true, todo.isEdit))
+};
 
 @Component({
   selector: 'app-root',
@@ -26,37 +52,10 @@ export class AppComponent {
 
   dispatch$ = new Subject<Action>();
   todos$: Observable<Todo[]> = this.dispatch$.pipe(
-    scan((acc: Todo[], value: Action) => {
-      switch (value.action) {
-        case 'Add':
-          const maxId =
-            (acc
-              .slice()
-              .sort((a, b) => b.id - a.id)
-              .map(todo => todo.id)[0] || 0) + 1;
-          return [...acc, new Todo(maxId, value.todo.content)];
-        case 'Update':
-          return acc.map(todo => {
-            if (todo.id === value.todo.id) {
-              todo = value.todo;
-            }
-            return todo;
-          });
-        case 'Delete':
-          return acc.filter(todo => todo.id !== value.todo.id);
-        case 'CancelAllEdit':
-          return acc.map(
-            _todo => new Todo(_todo.id, _todo.content, _todo.isCompleted, false)
-          );
-        case 'clearComplete':
-          return acc.filter(todo => !todo.isCompleted);
-        case 'MarkAllComplete':
-          return acc.map(
-            todo => new Todo(todo.id, todo.content, true, todo.isEdit)
-          );
-      }
-      return acc;
-    }, []),
+    scan(
+      (acc: Todo[], value: Action) => TodoActions[value.action](acc, value),
+      []
+    ),
     shareReplay()
   );
 
@@ -82,7 +81,7 @@ export class AppComponent {
 
   markAllComplete = () => this.dispatch$.next(new Action('MarkAllComplete'));
 
-  clearComplete = () => this.dispatch$.next(new Action('clearComplete'));
+  clearComplete = () => this.dispatch$.next(new Action('ClearComplete'));
 
   updateContent = (content, todo) =>
     this.dispatch$.next(new Action('Update', todo.updateContent(content)));
