@@ -35,4 +35,22 @@ export class AppComponent {
   clearComplete() {
     this.todos = this.todos.filter(todo => !todo.isCompleted);
   }
+
+  enterEdit(todo: Todo, idx, target) {
+    if (todo.isCompleted) {
+      return;
+    }
+    this.todos = this.todos.map(
+      _todo => new Todo(_todo.content, _todo.isCompleted, false)
+    );
+    this.todos.splice(idx, 1, todo.toggleEdit());
+  }
+
+  updateContent(content: string, idx) {
+    this.todos.splice(idx, 1, new Todo(content));
+  }
+
+  cancelUpdate(todo: Todo, idx) {
+    this.todos.splice(idx, 1, todo.toggleEdit());
+  }
 }
