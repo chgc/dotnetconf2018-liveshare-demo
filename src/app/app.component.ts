@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 import { Todo } from './model/todo';
+import { ActivatedRoute } from '@angular/router';
 
 @Component({
   selector: 'app-root',
@@ -10,7 +11,12 @@ export class AppComponent {
   title = 'todo';
   newTodo = '';
   todos: Todo[] = [];
-
+  filter = '';
+  constructor(private route: ActivatedRoute) {
+    route.fragment.subscribe(fragment => {
+      this.filter = (fragment || '/').replace('/', '');
+    });
+  }
   get itemLeft() {
     return this.todos.filter(todo => !todo.isCompleted).length;
   }
@@ -36,7 +42,7 @@ export class AppComponent {
     this.todos = this.todos.filter(todo => !todo.isCompleted);
   }
 
-  enterEdit(todo: Todo, idx, target) {
+  enterEdit(todo: Todo, idx, target: HTMLInputElement) {
     if (todo.isCompleted) {
       return;
     }
@@ -44,6 +50,7 @@ export class AppComponent {
       _todo => new Todo(_todo.content, _todo.isCompleted, false)
     );
     this.todos.splice(idx, 1, todo.toggleEdit());
+    target.focus();
   }
 
   updateContent(content: string, idx) {
