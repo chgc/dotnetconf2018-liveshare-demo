@@ -3,39 +3,7 @@ import { Todo } from './model/todo';
 import { ActivatedRoute } from '@angular/router';
 import { Subject, Observable } from 'rxjs';
 import { map, scan, shareReplay } from 'rxjs/operators';
-
-type ActionType =
-  | 'Add'
-  | 'Update'
-  | 'Delete'
-  | 'MarkAllComplete'
-  | 'ClearComplete'
-  | 'CancelAllEdit';
-export class Action {
-  constructor(public action: ActionType, public todo?: Todo) {}
-}
-
-export const TodoActions = {
-  Add: (acc, value) => {
-    const maxId = acc.reduce((a, b) => Math.max(a, b.id), 0) + 1;
-    return [...acc, new Todo(maxId, value.todo.content)];
-  },
-  Update: (acc, value) =>
-    acc.map(todo => {
-      if (todo.id === value.todo.id) {
-        todo = value.todo;
-      }
-      return todo;
-    }),
-  Delete: (acc, value) => acc.filter(todo => todo.id !== value.todo.id),
-  CancelAllEdit: (acc, value) =>
-    acc.map(
-      _todo => new Todo(_todo.id, _todo.content, _todo.isCompleted, false)
-    ),
-  ClearComplete: (acc, value) => acc.filter(todo => !todo.isCompleted),
-  MarkAllComplete: (acc, value) =>
-    acc.map(todo => new Todo(todo.id, todo.content, true, todo.isEdit))
-};
+import { Action, TodoActions } from './todo-actions';
 
 @Component({
   selector: 'app-root',
@@ -46,31 +14,34 @@ export class AppComponent {
   @ViewChildren('edit')
   edits: QueryList<ElementRef>;
 
-  newTodo = '';
   filter = '';
 
   dispatch$ = new Subject<Action>();
   todos$: Observable<Todo[]> = this.dispatch$.pipe(
-    scan(
-      (acc: Todo[], value: Action) => TodoActions[value.action](acc, value),
+    scan<Action, Todo[]>(
+      (acc, value) => TodoActions[value.action](acc, value),
       []
     ),
     shareReplay()
   );
 
-  constructor(private route: ActivatedRoute) {
-    route.fragment.subscribe(fragment => {
-      this.filter = (fragment || '/').replace('/', '');
-    });
-  }
   todoCount$ = this.todos$.pipe(map(todos => todos.length));
   itemLeft$ = this.todos$.pipe(
     map(todos => todos.filter(todo => !todo.isCompleted).length)
   );
 
-  addTodo() {
-    this.dispatch$.next(new Action('Add', Todo.create(this.newTodo)));
-    this.newTodo = '';
+  constructor(route: ActivatedRoute) {
+    route.fragment.subscribe(fragment => {
+      this.filter = (fragment || '/').replace('/', '');
+    });
+  }
+
+  addTodo(newTodo) {
+    if (!newTodo.value) {
+      return;
+    }
+    this.dispatch$.next(new Action('Add', Todo.create(newTodo.value)));
+    newTodo.value = '';
   }
 
   toggleComplete = (todo: Todo) =>
@@ -94,6 +65,10 @@ export class AppComponent {
     }
     this.dispatch$.next(new Action('CancelAllEdit'));
     this.dispatch$.next(new Action('Update', todo.toggleEdit()));
+    this.setInputFocus(target);
+  }
+
+  private setInputFocus(target: HTMLInputElement) {
     setTimeout(() => {
       const edit = this.edits.filter(
         ele => ele.nativeElement.id === target.id
