@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ViewChildren, QueryList, ElementRef } from '@angular/core';
 import { Todo } from './model/todo';
 import { ActivatedRoute } from '@angular/router';
 import { Subject, Observable } from 'rxjs';
@@ -17,11 +17,7 @@ export class Action {
 
 export const TodoActions = {
   Add: (acc, value) => {
-    const maxId =
-      (acc
-        .slice()
-        .sort((a, b) => b.id - a.id)
-        .map(todo => todo.id)[0] || 0) + 1;
+    const maxId = acc.reduce((a, b) => Math.max(a, b.id), 0) + 1;
     return [...acc, new Todo(maxId, value.todo.content)];
   },
   Update: (acc, value) =>
@@ -47,6 +43,9 @@ export const TodoActions = {
   styleUrls: ['./app.component.css']
 })
 export class AppComponent {
+  @ViewChildren('edit')
+  edits: QueryList<ElementRef>;
+
   newTodo = '';
   filter = '';
 
@@ -95,6 +94,11 @@ export class AppComponent {
     }
     this.dispatch$.next(new Action('CancelAllEdit'));
     this.dispatch$.next(new Action('Update', todo.toggleEdit()));
-    target.focus();
+    setTimeout(() => {
+      const edit = this.edits.filter(
+        ele => ele.nativeElement.id === target.id
+      )[0];
+      edit.nativeElement.focus();
+    }, 0);
   }
 }

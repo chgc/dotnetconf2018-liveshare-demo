@@ -2,7 +2,7 @@
   <header class="header">
     <h1>todos</h1>
     <input class="new-todo" placeholder="What needs to be done?" autofocus [(ngModel)]="newTodo"
-      (keyup.enter)="addTodo()" />
+           (keyup.enter)="addTodo()" />
   </header>
   <!-- This section should be hidden by default and shown when there are todos -->
   <section class="main" *ngIf="todoCount$ | async">
@@ -14,11 +14,11 @@
       <li *ngFor="let todo of (todos$ | async) | state: filter" [ngClass]="{'completed': todo.isCompleted, 'editing': todo.isEdit}">
         <div class="view">
           <input class="toggle" type="checkbox" [checked]="todo.isCompleted" (change)="toggleComplete(todo)">
-          <label (dblclick)="enterEdit(todo, edit)">{{ todo.content }}</label>
+          <label (dblclick)="enterEdit(todo,edit)">{{ todo.content }}</label>
           <button class="destroy" (click)="removeTodo(todo)"></button>
         </div>
-        <input class="edit" #edit [value]="todo.content" (keyup.enter)="updateContent(edit.value, todo)"
-          (keyup.esc)="cancelUpdate(todo)" />
+        <input class="edit" #edit [id]="todo.id" [value]="todo.content" (keyup.enter)="updateContent(edit.value, todo)"
+               (keyup.esc)="cancelUpdate(todo)" />
       </li>
     </ul>
   </section>
